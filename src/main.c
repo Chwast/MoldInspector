@@ -4,17 +4,19 @@
 #include "bsp/i2c_driver.h"
 #include "scd41/scd41.h"
 
-#define MOVING_AVERAGE_WINDOW_SIZE (10u)
+#define MOVING_AVERAGE_WINDOW_SIZE (10u) //represents how many numbers will be used
 #define HUMIDITY_THRESHOLD (60u)
 
 static int32_t movingAvg(int *ptrArrNumbers, uint32_t *ptrSum, size_t pos, uint16_t nextNum)
 {
+	//Subtract the oldest number from the prev sum, add the new number
 	*ptrSum = *ptrSum - ptrArrNumbers[pos] + nextNum;
+	//Assign the nextNum to the position in the array
 	ptrArrNumbers[pos] = nextNum;
+	//return the average
 	return *ptrSum / MOVING_AVERAGE_WINDOW_SIZE;
 }
 
-static volatile int32_t avgCo2 = 600; // initial value
 void main(void)
 {
 	i2c_driver_init();
@@ -38,6 +40,7 @@ void main(void)
 
 	scd41_start_periodic_measurement();
 
+	// used for moving average calculations
 	uint32_t co2AvgArray[MOVING_AVERAGE_WINDOW_SIZE] = {0};
 	uint32_t temperatureAvgArray[MOVING_AVERAGE_WINDOW_SIZE] = {0};
 	uint32_t humidityAvgArray[MOVING_AVERAGE_WINDOW_SIZE] = {0};
@@ -58,7 +61,7 @@ void main(void)
 		uint16_t co2Sample = 0;
 		uint16_t temperatureSample = 0;
 		uint16_t humiditySample = 0;
-		k_sleep(K_SECONDS(5U));
+		k_sleep(K_SECONDS(5U)); //delay for the sensor to measure
 		int16_t rc = scd41_get_measures(&co2Sample, &temperatureSample, &humiditySample);
 		printk("co2 sample %d\n", co2Sample);
 		printk("temperature sample %d\n", temperatureSample);
@@ -79,9 +82,7 @@ void main(void)
 		}
 		if (moving_averge_filled)
 		{
-			// printk("average temperature value: %d\n", temperatureAvg);
-
-			if(humidityAvg >= (HUMIDITY_THRESHOLD - 2)  && humidityAvg <= (HUMIDITY_THRESHOLD + 2))
+			if (humidityAvg >= (HUMIDITY_THRESHOLD - 2) && humidityAvg <= (HUMIDITY_THRESHOLD + 2))
 			{
 				printk("Humidity threshold reached. Checking temperature trend\n");
 
