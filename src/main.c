@@ -82,9 +82,9 @@ void main(void)
 		}
 		if (moving_averge_filled)
 		{
-			if (humidityAvg >= (HUMIDITY_THRESHOLD - 2) && humidityAvg <= (HUMIDITY_THRESHOLD + 2))
+			if (humidityAvg >= HUMIDITY_THRESHOLD)
 			{
-				printk("Humidity threshold reached. Checking temperature trend\n");
+				printk("Humidity threshold reached. value of humidity: %d %%\n Checking temperature trend\n", humidityAvg);
 
 				if (temperatureSample < temperatureAvg)
 				{
@@ -95,14 +95,13 @@ void main(void)
 				{
 					printk("Temperature rising\n");
 					printk("co2 concentration: %d\n", co2Avg);
-					printk("humidity value: %d\n", humidityAvg);
 
 					printk("if trend is rising report that mold is growing\n");
 				}
 			}
 			else
 			{
-				printk("Low humidity value %d, no mold grow possible\n", humidityAvg);
+				printk("Low humidity value %d %%, no mold grow possible\n", humidityAvg);
 			}
 		}
 	}
